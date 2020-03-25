@@ -3,7 +3,7 @@ global Nn;
 %tol = 10^-8 * dT*sqrt(D/m)/dS;
 dfnorm = norm(df(q0));
 %tol = min([fnorm/10^3,10^-8 * dT*sqrt(D/mtot)/dS]);
-tol = Nn*10^-8;
+tol = Nn*10^-12;
 kmax = 100;
 qn = q0;
 k = 0;

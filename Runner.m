@@ -8,7 +8,7 @@ savedata = true;
 
 Sys = struct();
 
-Nn = 60;
+Nn = 120;
 L = 1;
 w = L/10;
 Si = linspace(0,L,Nn);
@@ -20,8 +20,8 @@ D = 2*10^-2*ones(Nn,2)/dS; D(:,2) = 1000*D(:,2);
 
 
 Fxnode = zeros(Nn,1); Fxnode(end) = -0.0001;
-Fynode = zeros(Nn,1); Fynode(end) = 1.5;
-Fznode = zeros(Nn,1); Fznode(end) = .03;
+Fynode = zeros(Nn,1); Fynode(end) = .5;
+Fznode = zeros(Nn,1); Fznode(end) = .3;
 
 
 
@@ -81,8 +81,10 @@ Sys.Fynode = Fynode;
 Sys.Fznode = Fznode;
 Sys.dstar = dstar;
 for i = 1:Nk
-    i
-    tic;
+    if mod(i,10)==0
+        fprintf(['step = ' num2str(i) ', ' num2str(i*100/Nk) ' percent done \n'])
+    end
+    %tic;
     rho = mult(i)*rho0;
     Sys.rho = rho;
     Sys.Fxnode = mult(i)*Fxnode;
@@ -93,7 +95,8 @@ for i = 1:Nk
     %ff.gradient = @(X) CD(ff.objective,X);
     ff.gradient = @(X) Xconstrainer(Gradient(Xextender(X,dS),Sys));
     %ff.gradient2 = @(X) Xconstrainer(Gradient2(Xextender(X),dstar));
-    ff.hessian = @(X) CDGradient(ff.gradient,X);
+    %ff.hessian = @(X) CDGradient(ff.gradient,X);
+    ff.hessian = @(X) Hconstrainer(Hessian(Xextender(X,dS),Sys));
     %ff.hessian = @(X) Hconstrainer(Hessian(Xextender(X,dS),Sys));
     options = optimoptions('fminunc');
     options.MaxIterations = 1000;
@@ -187,7 +190,7 @@ for i = 1:Nk
     
     
     %%
-    tocstep = toc;
+    %tocstep = toc;
     if ploton
         plot3(Xvals(:,1),Xvals(:,2),Xvals(:,3));
         hold all
@@ -244,10 +247,10 @@ for i = 1:Nk
         %writetable(TT,['data/data.' num2str(i) '.csv']);
         %vtkwrite(['data/data.' num2str(i) '.vtk'], 'polydata', 'lines', xv, yv, zv)
         datapad = @(X) [X(2);X(2:(end-1));X(end-1)];
-        writevtkline(['data2/data2.' num2str(i) '.vtk'],xv,yv,zv,'omega', datapad(omega)/dS ,'edgevecsp',edgevecsp)
+        writevtkline(['data/data.' num2str(i) '.vtk'],xv,yv,zv,'omega', datapad(omega)/dS ,'edgevecsp',edgevecsp)
     end
     dstar = dcur;
-    tocstep
+    %tocstep
 end
 
 %% Axial strain

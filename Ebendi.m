@@ -6,6 +6,6 @@ dS = Sys.dS;
 D = Sys.D;
 [omega,eta] = kappa2omegaeta(thetai(:,1),thetai(:,3),dS);
 Eout = 0.5*D(:,1).*omega.^2.*(1+eta.^2).^2 + 0.5*D(:,2).*(thetai(:,2).^2);
-
+Eout = sum(Eout);
 end
 

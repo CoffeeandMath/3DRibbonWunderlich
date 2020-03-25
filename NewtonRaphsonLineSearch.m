@@ -9,8 +9,10 @@ tol = sqrt(dim)*10^-6;
 kmax = 100;
 qn = q0;
 k = 0;
-Nls = 10;
-alphai = linspace(-.1,1.5,Nls);
+% Nls = 10;
+% alphai = linspace(-.1,1.5,Nls);
+Nls = 1;
+alphai = 1;
 while and(dfnorm > tol,k < kmax)
     k = k+1;
     Amat = A(qn);
@@ -42,6 +44,6 @@ while and(dfnorm > tol,k < kmax)
     qn = qn + step;
     dfnorm = norm(df(qn));
 end
-k
+%k
 qout = qn;
 end

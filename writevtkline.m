@@ -40,10 +40,19 @@ if Natr > 0
         if i == 1
             fprintf(fid, ['POINT_DATA ' num2str(Ndata) '\n']);
         end
-        fprintf(fid, ['SCALARS ' atr_name ' FLOAT 1\n']);
-        fprintf(fid, 'LOOKUP_TABLE default\n');
-        for j = 1:Ndata
-            fprintf(fid, [num2str(data(j)) '\n']);
+        if ~iscell(data)
+            fprintf(fid, ['SCALARS ' atr_name ' FLOAT 1\n']);
+            fprintf(fid, 'LOOKUP_TABLE default\n');
+            for j = 1:Ndata
+                fprintf(fid, [num2str(data(j),prec) '\n']);
+            end
+        else
+            fprintf(fid, ['VECTORS ' atr_name ' FLOAT\n']);
+            %fprintf(fid, 'LOOKUP_TABLE default\n');
+            for j = 1:Ndata
+                fprintf(fid, [num2str(data{j}(1),prec) ' ' num2str(data{j}(2),prec) ' ' num2str(data{j}(3),prec) '\n']);
+            end
+            
         end
     end
 end

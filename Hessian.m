@@ -183,7 +183,7 @@ dEbendival = dEbendi(thetai,Sys);
 ddEbendlocal = cell(Nn,1);
 
 
-for n = 2:(Nn-1)
+parfor n = 2:(Nn-1)
     
     %dp hinm dphinm
     
