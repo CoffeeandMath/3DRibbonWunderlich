@@ -8,7 +8,7 @@ savedata = true;
 
 Sys = struct();
 
-Nn = 120;
+Nn = 300;
 L = 1;
 w = L/10;
 Si = linspace(0,L,Nn);
@@ -21,7 +21,7 @@ D = 2*10^-2*ones(Nn,2)/dS; D(:,2) = 1000*D(:,2);
 
 Fxnode = zeros(Nn,1); Fxnode(end) = -0.0001;
 Fynode = zeros(Nn,1); Fynode(end) = .5;
-Fznode = zeros(Nn,1); Fznode(end) = .3;
+Fznode = zeros(Nn,1); Fznode(end) = .5;
 
 
 
@@ -80,9 +80,15 @@ Sys.Fxnode = Fxnode;
 Sys.Fynode = Fynode;
 Sys.Fznode = Fznode;
 Sys.dstar = dstar;
+nstep = 10;
+tic
 for i = 1:Nk
-    if mod(i,10)==0
-        fprintf(['step = ' num2str(i) ', ' num2str(i*100/Nk) ' percent done \n'])
+    if mod(i,nstep)==0
+        
+        ttot = toc;
+        tave = ttot/nstep;
+        fprintf(['step = ' num2str(i) ', ' num2str(i*100/Nk) ' percent done, Average time: ' num2str(tave) '\n']);
+        tic
     end
     %tic;
     rho = mult(i)*rho0;
