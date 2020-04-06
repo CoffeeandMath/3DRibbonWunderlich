@@ -8,7 +8,7 @@ savedata = true;
 
 Sys = struct();
 
-Nn = 10;
+Nn = 50;
 L = 1;
 w = L/10;
 Si = linspace(0,L,Nn);
@@ -112,7 +112,8 @@ for i = 1:Nk
     %Xsolve = fminunc(ff.objective,Xinitconst,options);
     %Xsolve = NewtonRaphsonLineSearch(ff.objective,ff.gradient,ff.hessian,Xinitconst);
     %norm(ff.gradient2(Xsolve))
-    Xsolve = NewtonRaphsonLineSearch(ff.objective,ff.gradient,ff.hessian,Xinitconst);
+    %Xsolve = NewtonRaphsonLineSearch(ff.objective,ff.gradient,ff.hessian,Xinitconst);
+    Xsolve = ModGradDesc(ff.objective,ff.gradient,ff.hessian,Xinitconst);
     
     x = cell(Nn,1);
     x{1} = [0;0;0];
