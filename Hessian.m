@@ -12,14 +12,10 @@ Fznode = Sys.Fznode;
 dstar = Sys.dstar;
 
 x = cell(Nn,1);
-phi = zeros(Nn-1,1);
-
 for i = 1:Nn
     x{i} = X((4*i - 3):(4*i - 1));
-    if i < Nn
-        phi(i) = X(4*i);
-    end
 end
+phi = X(4:4:end);
 
 
 
@@ -106,17 +102,21 @@ end
 
 %% Now to Calculate The Gradients
 
+Bi = zeros(3,3,Nn-1);
+skw = @(v) [0, -v(3), v(2); v(3), 0, -v(1); -v(2), v(1), 0];
+for i =1:(Nn-1)
+    Ti = dstar{i,3};
+    ti = dcur{i,3};
+    Bi(:,:,i) = (0.5/epsval(i))*((1/(1+Ti'*ti))*(Ti*cross(Ti,ti)' - cross(Ti,ti)*((ti+Ti)')) + skw(Ti));
+end
+
+
 dkappadphivals = zeros(3,2,Nn-1);
-
-
-
 dkappadxvals = zeros(3,3,3,Nn);
 
 for i = 2:(Nn-1)
-
-    dkappadxvals(:,:,:,i) = dkappadx(epsval(i-1),epsval(i),dcur{i-1,3},dcur{i,3},dstar{i-1,3},dstar{i,3},Di{i-1},Di{i},di{i-1},di{i},ptwist{i-1},ptwist{i});
+    dkappadxvals(:,:,:,i) = dkappadx(di{i-1},di{i},Bi(:,:,i-1),Bi(:,:,i));
     dkappadphivals(:,:,i) = dkappadphi(q_i{i});
-
     
 end
 
@@ -167,8 +167,22 @@ for i = 2:(Nn-1)
 end
 
 %% Calculating second derivatives of strain measures
-
-
+DBi = zeros(3,3,3,Nn-1);
+for i = 1:(Nn-1)
+    Ti = dstar{i,3};
+    ti = dcur{i,3};
+    
+    f2i = 1 + Ti'*ti;
+    
+    
+    dBideps = thirdorder(Bi(:,:,i),-ti/epsval(i));
+    Ticti = cross(Ti,ti);
+    dBidf2 = thirdorder(Ti*Ticti' - Ticti*Ti' - Ticti*ti',(0.5/epsval(i)^2)*(-1/f2i^2)*(Ti-ti*(f2i-1)));
+    Tiskw = skw(Ti);
+    tiprojeps = eye(3) - ti*ti';
+    dBidti = (0.5/(epsval(i)^2*f2i))*(thirdorder(Ti,Tiskw - Ticti*ti') - thirdorderin(Tiskw - Ticti*ti',ti+Ti) - thirdorder(Ticti,tiprojeps));
+    DBi(:,:,:,i) = dBideps + dBidf2 + dBidti;
+end
 
 %ddkappaIdxkJdphiK
 
@@ -176,27 +190,23 @@ ddkappadphidphival = zeros(3,2,2,Nn); %ddkappaiNdphijdphiK = a(i,j,K,N)
 ddkappadxdphival = zeros(3,3,3,2,Nn); %ddkappaiNdxjPdphiQ = a(i,j,P,Q,N)
 ddkappadxdxval = zeros(3,3,3,3,3,Nn); %ddkappaiNdxjPdxkQ = a(i,j,k,P,Q,N)
 
-ddEbend = spalloc(4*Nn-1,4*Nn-1,20*Nn);
-%ddEbend = zeros(4*Nn-1,4*Nn-1);
+%ddEbend = spalloc(4*Nn-1,4*Nn-1,20*Nn);
+ddEbend = zeros(4*Nn-1,4*Nn-1);
 ddEbendival = ddEbendi(thetai,Sys);
 dEbendival = dEbendi(thetai,Sys);
 ddEbendlocal = cell(Nn,1);
 
 
-parfor n = 2:(Nn-1)
+for n = 2:(Nn-1)
     
     %dp hinm dphinm
-    
-    
     ddkappadphidphival(:,:,:,n) = ddkappadphidphi(q_i{n});
     
-
     %ddkappaIdxkJdphiK
-    ddkappadxdphival(:,:,:,:,n) = ddkappadxdphi(philoc{n},tloc{n},diloc{n},Tloc{n},Diloc{n},ptwloc{n},pparloc{n},epsvalloc{n});
-
-    %ddkappaIdxkJdxmL
+    ddkappadxdphival(:,:,:,:,n) = ddkappadxdphi(di{n-1},di{n},Bi(:,:,n-1),Bi(:,:,n));
     
-    ddkappadxdxval(:,:,:,:,:,n) = ddkappadxdx(tloc{n},diloc{n},Tloc{n},Diloc{n},ptwloc{n},epsvalloc{n});
+    %ddkappaIdxkJdxmL
+    ddkappadxdxval(:,:,:,:,:,n) = ddkappadxdx(di{n-1},di{n},Bi(:,:,n-1),Bi(:,:,n),DBi(:,:,:,n-1),DBi(:,:,:,n));
 end
 
 
@@ -250,7 +260,7 @@ for i = 2:(Nn-1)
     ddEbend(((4*i-7):(4*i+3)),((4*i-7):(4*i+3))) = ddEbend(((4*i-7):(4*i+3)),((4*i-7):(4*i+3))) + ddEbendlocal{i};
 end
 
-
+ddEbend = sparse(ddEbend);
 %% Eaxial hessian
 ddEaxloc = cell(Nn-1,1);
 ddEax = spalloc(4*Nn-1,4*Nn-1,9*Nn);

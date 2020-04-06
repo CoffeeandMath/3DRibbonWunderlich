@@ -1,4 +1,4 @@
-%%
+ %%
 clear all
 close all
 ploton = false;
@@ -8,7 +8,7 @@ savedata = true;
 
 Sys = struct();
 
-Nn = 300;
+Nn = 10;
 L = 1;
 w = L/10;
 Si = linspace(0,L,Nn);
@@ -20,8 +20,8 @@ D = 2*10^-2*ones(Nn,2)/dS; D(:,2) = 1000*D(:,2);
 
 
 Fxnode = zeros(Nn,1); Fxnode(end) = -0.0001;
-Fynode = zeros(Nn,1); Fynode(end) = .5;
-Fznode = zeros(Nn,1); Fznode(end) = .5;
+Fynode = zeros(Nn,1); Fynode(end) = 1.5;
+Fznode = zeros(Nn,1); Fznode(end) = .1;
 
 
 
@@ -64,7 +64,7 @@ Xinitconst = Xinit(8:end);
 
 
 rho0 = rho;
-Nk = 1500;
+Nk = 2000;
 mult = linspace(0,1,Nk);
 
 dstar = dstar0;
@@ -265,4 +265,4 @@ for i = 1:(Nn-1)
     axstr(i) = norm(x{i+1} - x{i});
 end
 figure()
-plot(Si(1:(end-1)),axstr-dS)
+plot(Si(1:(end-1)),(axstr-dS)/dS)

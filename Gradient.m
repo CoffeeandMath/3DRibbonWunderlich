@@ -12,14 +12,10 @@ Fznode = Sys.Fznode;
 dstar = Sys.dstar;
 
 x = cell(Nn,1);
-phi = zeros(Nn-1,1);
-
 for i = 1:Nn
     x{i} = X((4*i - 3):(4*i - 1));
-    if i < Nn
-        phi(i) = X(4*i);
-    end
 end
+phi = X(4:4:end);
 
 
 
@@ -105,24 +101,21 @@ for i = 2:(Nn-1)
 end
 
 %% Now to Calculate The Gradients
+Bi = zeros(3,3,Nn-1);
+skw = @(v) [0, -v(3), v(2); v(3), 0, -v(1); -v(2), v(1), 0];
+for i =1:(Nn-1)
+    Ti = dstar{i,3};
+    ti = dcur{i,3};
+    Bi(:,:,i) = (0.5/epsval(i))*((1/(1+Ti'*ti))*(Ti*cross(Ti,ti)' - cross(Ti,ti)*((ti+Ti)')) + skw(Ti));
+end
+
 
 dkappadphivals = zeros(3,2,Nn-1);
-
-
-
-dkappadxvals = zeros(3,3,3,Nn);
+dkappadxvals = zeros(3,3,3,Nn); 
 
 for i = 2:(Nn-1)
-    %dkdx = dkappadx(epsval(i-1),epsval(i),dcur{i-1,3},dcur{i,3},dstar{i-1,3},dstar{i,3},Di{i-1},Di{i},di{i-1},di{i},ptwist{i-1},ptwist{i});
-    %dkdphi = dkappadphi(phi(i-1),phi(i),dstar{i-1,3},dstar{i,3},Di{i-1},Di{i},di{i-1},di{i},ppar{i-1},ppar{i});
-    %dkdphi = dkappadphi2(q_i{i});
-    dkappadxvals(:,:,:,i) = dkappadx(epsval(i-1),epsval(i),dcur{i-1,3},dcur{i,3},dstar{i-1,3},dstar{i,3},Di{i-1},Di{i},di{i-1},di{i},ptwist{i-1},ptwist{i});
-    dkappadphivals(:,:,i) = dkappadphi(q_i{i});
-%     
-%     dkappa1dphi(i,:) = dkdphi(1,:);
-%     dkappa2dphi(i,:) = dkdphi(2,:);
-%     dkappa3dphi(i,:) = dkdphi(3,:);
-%     
+    dkappadxvals(:,:,:,i) = dkappadx(di{i-1},di{i},Bi(:,:,i-1),Bi(:,:,i));
+    dkappadphivals(:,:,i) = dkappadphi(q_i{i}); 
     
 end
 

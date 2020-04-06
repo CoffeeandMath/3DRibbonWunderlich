@@ -6,7 +6,6 @@ function Etot = Objective(X,Sys)
 % time step. Note that X has dim 4*Nn-1 because there are only Nn-1
 % segments and gamma is defined at the segments
 Nn = Sys.Nn;
-D = Sys.D;
 dS = Sys.dS;
 rho = Sys.rho;
 Eaxial = Sys.Eaxial;
@@ -17,14 +16,11 @@ dstar = Sys.dstar;
 
 
 x = cell(Nn,1);
-phi = zeros(Nn-1,1);
 
 for i = 1:Nn
     x{i} = X((4*i - 3):(4*i - 1));
-    if i < Nn
-        phi(i) = X(4*i);
-    end
 end
+phi = X(4:4:end);
 
 
 
@@ -60,7 +56,7 @@ ptwist = cell(Nn-1,1);
 for i = 1:(Nn-1)
     r = cos(phi(i)/2);
     v = sin(phi(i)/2)*dstar{i,3};
-    ptwist{i} = qgen(r,v(1),v(2),v(3));
+    ptwist{i} = qgen(r,v);
 end
 
 %% Calculating parallel transport quaternion
@@ -70,13 +66,13 @@ for i = 1:(Nn-1)
     
     r = sqrt((1+dstar{i,3}'*dcur{i,3})/2);
     v = (1/sqrt(2))*(1/sqrt(1 + dstar{i,3}'*dcur{i,3})) * cross(dstar{i,3},dcur{i,3});
-    ppar{i} = qgen(r,v(1),v(2),v(3));
+    ppar{i} = qgen(r,v);
 end
 %% Calculating the product of quaternions
 di = cell(Nn-1,1);
 
 for i = 1:(Nn-1)
-    di{i} = qmult(qmult(ppar{i},ptwist{i}),Di{i});
+    di{i} = qmult(ppar{i},ptwist{i},Di{i});
 end
 
 
